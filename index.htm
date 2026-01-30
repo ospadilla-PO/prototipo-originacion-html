@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo Completo - Registro Emprendedora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .mockup-container {
+            width: 375px;
+            height: 812px;
+            background: #1a2332;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #4ade80;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* CONTENT */
+        .content {
+            padding: 20px 24px;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 24px;
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 8px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #f4e91c;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #ffffff;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        /* CAPTURE OPTIONS SCREEN */
+        .capture-title {
+            font-size: 24px;
+            color: #ffffff;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .capture-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 0 24px;
+        }
+
+        .capture-card {
+            background: rgba(71, 85, 105, 0.4);
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .capture-card:hover {
+            background: rgba(71, 85, 105, 0.6);
+            border-color: #f4e91c;
+            transform: translateY(-2px);
+        }
+
+        .capture-card.recommended {
+            border-color: #f4e91c;
+            background: rgba(71, 85, 105, 0.5);
+        }
+
+        .capture-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .capture-icon.manual {
+            background: linear-gradient(135deg, #f4e91c, #fef08a);
+        }
+
+        .capture-icon.scan {
+            background: linear-gradient(135deg, #60a5fa, #93c5fd);
+        }
+
+        .capture-content {
+            flex: 1;
+        }
+
+        .capture-content h3 {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .capture-content p {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            background: #f4e91c;
+            color: #1a2332;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* FORM FIELDS */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(71, 85, 105, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input:focus {
+            background: rgba(71, 85, 105, 0.4);
+            border-color: #f4e91c;
+        }
+
+        .input::placeholder {
+            color: #64748b;
+        }
+
+        .input.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .error-message {
+            font-size: 11px;
+            color: #ef4444;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        select.input {
+            cursor: pointer;
+        }
+
+        /* TOGGLE SWITCH */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #f4e91c;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        /* BUTTONS */
+        .button-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a2332;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .cta-button {
+            width: 100%;
+            padding: 16px;
+            background: #f4e91c;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a2332;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: #fef08a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(244, 233, 28, 0.3);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        .cta-button:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .secondary-button {
+            width: 100%;
+            padding: 14px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: #60a5fa;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .secondary-button:hover {
+            color: #93c5fd;
+        }
+
+        /* CONFIRMATION SCREEN */
+        .confirmation-card {
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .edit-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #f4e91c;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .confirmation-item {
+            margin-bottom: 16px;
+        }
+
+        .confirmation-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .confirmation-value {
+            font-size: 15px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* GRADE SCREEN */
+        .grade-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            animation: fadeInScale 0.6s ease;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .grade-circle {
+            width: 140px;
+            height: 140px;
+            border: 5px solid #4ade80;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            font-weight: 700;
+            color: #4ade80;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .grade-circle.grade-a {
+            border-color: #4ade80;
+            color: #4ade80;
+            box-shadow: 0 0 40px rgba(74, 222, 128, 0.4);
+        }
+
+        .grade-circle.grade-b {
+            border-color: #fbbf24;
+            color: #fbbf24;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.4);
+        }
+
+        .grade-circle.grade-c {
+            border-color: #f97316;
+            color: #f97316;
+            box-shadow: 0 0 40px rgba(249, 115, 22, 0.4);
+        }
+
+        .grade-circle.grade-d {
+            border-color: #ef4444;
+            color: #ef4444;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+        }
+
+        .grade-circle.rejected {
+            border-color: #ef4444;
+            color: #ef4444;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+            font-size: 28px;
+            text-align: center;
+            line-height: 1.2;
+            padding: 10px;
+        }
+
+        .grade-subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .status-badge.pre-approved {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 2px solid #4ade80;
+        }
+
+        .status-badge.rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+
+        .variables-section {
+            margin-top: 40px;
+        }
+
+        .variables-title {
+            font-size: 18px;
+            color: #4ade80;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .variable-item {
+            margin-bottom: 24px;
+        }
+
+        .variable-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 16px;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+        }
+
+        .progress-bar.grade-a {
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+        }
+
+        .progress-bar.grade-b {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+
+        .progress-bar.grade-c {
+            background: linear-gradient(90deg, #f97316, #ea580c);
+        }
+
+        .progress-bar.grade-d {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .progress-percentage {
+            font-size: 12px;
+            color: #1a2332;
+            font-weight: 700;
+        }
+
+        /* DETAIL SCREEN */
+        .detail-banner {
+            background: #f4e91c;
+            padding: 20px 24px;
+            text-align: center;
+            margin: -20px -24px 24px -24px;
+        }
+
+        .detail-banner.success {
+            background: #4ade80;
+        }
+
+        .detail-banner.warning {
+            background: #fbbf24;
+        }
+
+        .detail-banner.error {
+            background: #ef4444;
+        }
+
+        .detail-banner-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .detail-banner-title {
+            font-size: 14px;
+            color: #1a2332;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .detail-banner.error .detail-banner-title {
+            color: #ffffff;
+        }
+
+        .detail-banner-subtitle {
+            font-size: 13px;
+            color: #1a2332;
+            line-height: 1.5;
+        }
+
+        .detail-banner.error .detail-banner-subtitle {
+            color: #ffffff;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-section-title {
+            font-size: 16px;
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f4e91c;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .detail-card-title {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .detail-card-content {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .detail-card-value {
+            font-size: 14px;
+            color: #f4e91c;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .detail-rule {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .detail-rule-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .detail-rule-content {
+            flex: 1;
+        }
+
+        .detail-rule-title {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .detail-rule-description {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .grade-comparison {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(71, 85, 105, 0.2);
+            border-radius: 12px;
+        }
+
+        .grade-comparison-item {
+            text-align: center;
+        }
+
+        .grade-comparison-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .grade-comparison-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .grade-comparison-arrow {
+            font-size: 32px;
+            color: #f4e91c;
+        }
+
+        /* MODAL SMS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px 24px;
+            margin: 20px;
+            max-width: 320px;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: #60a5fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a2332;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-text {
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-text strong {
+            color: #1a2332;
+            font-weight: 600;
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-button-primary {
+            width: 100%;
+            padding: 14px;
+            background: #f4e91c;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a2332;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button-primary:hover {
+            background: #fef08a;
+        }
+
+        .modal-button-secondary {
+            width: 100%;
+            padding: 14px;
+            background: none;
+            border: none;
+            font-size: 15px;
+            font-weight: 500;
+            color: #60a5fa;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-button-secondary:hover {
+            color: #93c5fd;
+        }
+
+        /* AUTHORIZATION SCREEN */
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-subtitle {
+            font-size: 13px;
+            color: #60a5fa;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .auth-name {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .auth-description {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .nip-container {
+            margin: 40px 0;
+        }
+
+        .nip-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .nip-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .nip-box {
+            width: 50px;
+            height: 60px;
+            background: rgba(71, 85, 105, 0.3);
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .nip-box.filled {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: #60a5fa;
+        }
+
+        .nip-input {
+            width: 50px;
+            height: 60px;
+            background: rgba(244, 233, 28, 0.1);
+            border: 2px solid #f4e91c;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .nip-input:focus {
+            background: rgba(244, 233, 28, 0.2);
+            border-color: #fef08a;
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .auth-link a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .auth-link a:hover {
+            color: #93c5fd;
+        }
+
+        .auth-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        .info-note {
+            background: rgba(96, 165, 250, 0.1);
+            border-left: 3px solid #60a5fa;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .info-note-text {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .variable-detail-card {
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .variable-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .variable-detail-name {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .variable-detail-score {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .variable-detail-components {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .component-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .component-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .bureau-data-card {
+            background: rgba(71, 85, 105, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .bureau-data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .bureau-data-label {
+            color: #94a3b8;
+        }
+
+        .bureau-data-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .bureau-data-value.danger {
+            color: #ef4444;
+        }
+
+        .bureau-data-value.success {
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+        <!-- SCREEN 1: CAPTURA DE DATOS PERSONALES -->
+        <div class="screen active" id="screen1">
+            <div class="status-bar">
+                <button class="back-button">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <h1 class="capture-title">Captura datos personales</h1>
+
+                <div class="capture-options">
+                    <div class="capture-card recommended" onclick="goToScreen(2)">
+                        <span class="recommended-badge">RECOMENDADO</span>
+                        <div class="capture-icon manual">
+                            ✏️
+                        </div>
+                        <div class="capture-content">
+                            <h3>Manualmente</h3>
+                            <p>Llena la información de forma manual</p>
+                        </div>
+                    </div>
+
+                    <div class="capture-card">
+                        <div class="capture-icon scan">
+                            📄
+                        </div>
+                        <div class="capture-content">
+                            <h3>Escanear IFE/INE</h3>
+                            <p>Agrega información más rápido</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: DATOS -->
+        <div class="screen" id="screen2">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(1)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title">Datos</h1>
+                </div>
+
+                <h2 class="subtitle">Datos de la emprendedora</h2>
+                <p class="description">Escribe los datos completos</p>
+
+                <form id="form1">
+                    <div class="form-group">
+                        <label class="label">Nombre(s)</label>
+                        <input type="text" class="input" id="nombre" placeholder="Nombre completo" value="Saira Inés">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Apellido Paterno</label>
+                        <input type="text" class="input" id="apellidoP" placeholder="Apellido paterno" value="Fraga">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Apellido Materno</label>
+                        <input type="text" class="input" id="apellidoM" placeholder="Apellido materno" value="Morales">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">CURP</label>
+                        <input type="text" class="input" id="curp" placeholder="CURP (18 caracteres)" value="FAMS840802MCFRR03" maxlength="18" oninput="validateCURP(this)">
+                        <div class="error-message" id="curpError">El CURP debe tener exactamente 18 caracteres alfanuméricos</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Fecha de nacimiento</label>
+                        <input type="date" class="input" id="fechaNacimiento" value="1984-08-02">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Entidad de nacimiento</label>
+                        <select class="input" id="entidadNacimiento">
+                            <option value="Ciudad de México">Ciudad de México</option>
+                            <option value="Guadalajara">Guadalajara</option>
+                            <option value="Monterrey">Monterrey</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Teléfono</label>
+                        <input type="tel" class="input" id="telefono" placeholder="5555555555" value="5555555555">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Confirmación</label>
+                        <input type="tel" class="input" id="confirmacion" placeholder="5555555555" value="5555555555">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">¿La emprendedora es referida?</label>
+                        <div class="toggle-group">
+                            <span class="toggle-label">No</span>
+                            <div class="toggle-switch active" id="toggleReferida">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span class="toggle-label">Sí</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="goToScreen(3)">Continuar</button>
+                <button type="button" class="secondary-button">Cancelar Solicitud</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: DIRECCIÓN -->
+        <div class="screen" id="screen3">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(2)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title">Dirección</h1>
+                </div>
+
+                <h2 class="subtitle">Dirección de la emprendedora</h2>
+                <p class="description">Completa los siguientes campos</p>
+
+                <form id="form2">
+                    <div class="form-group">
+                        <label class="label">Calle</label>
+                        <input type="text" class="input" id="calle" placeholder="Nombre de la calle" value="C Nezahualcóyotl">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="label">No. Exterior</label>
+                            <input type="text" class="input" id="noExterior" placeholder="No." value="Q">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">No. Interior</label>
+                            <input type="text" class="input" id="noInterior" placeholder="No." value="23">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Código Postal</label>
+                        <input type="text" class="input" id="codigoPostal" placeholder="00000" value="55118">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Colonia</label>
+                        <input type="text" class="input" id="colonia" placeholder="Nombre de la colonia" value="Alfredo mazo">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Alcaldía/Municipio</label>
+                        <input type="text" class="input" id="municipio" placeholder="Alcaldía o Municipio" value="Ecatepec">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Estado</label>
+                        <select class="input" id="estado">
+                            <option value="Estado de México">Estado de México</option>
+                            <option value="Ciudad de México">Ciudad de México</option>
+                            <option value="Jalisco">Jalisco</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="goToScreen(4)">Continuar</button>
+                <button type="button" class="secondary-button">Cancelar Solicitud</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: VARIABLES RELEVANTES -->
+        <div class="screen" id="screen4">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(3)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title">Variables relevantes</h1>
+                </div>
+
+                <h2 class="subtitle">Información adicional</h2>
+                <p class="description">Completa los siguientes campos</p>
+
+                <form id="form3">
+                    <div class="form-group">
+                        <label class="label">Antigüedad del domicilio</label>
+                        <select class="input" id="antiguedadDomicilio">
+                            <option value="">Selecciona una opción</option>
+                            <option value="menos-1">Menos de un año</option>
+                            <option value="1-3">De 1 a 3 años</option>
+                            <option value="4-6">De 4 a 6 años</option>
+                            <option value="6-10">De 6 a 10 años</option>
+                            <option value="mas-10">Más de 10 años</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Tipo de domicilio</label>
+                        <select class="input" id="tipoDomicilio">
+                            <option value="">Selecciona una opción</option>
+                            <option value="propia">Propia</option>
+                            <option value="familiar">Familiar</option>
+                            <option value="hipoteca">Hipoteca / Pagando</option>
+                            <option value="rentada">Rentada / Prestada</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Coincidencia INE–domicilio</label>
+                        <select class="input" id="coincidenciaINE">
+                            <option value="">Selecciona una opción</option>
+                            <option value="si">Sí coincide</option>
+                            <option value="no">No coincide</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Antigüedad del negocio</label>
+                        <select class="input" id="antiguedadNegocio">
+                            <option value="">Selecciona una opción</option>
+                            <option value="menos-1">Menos de un año</option>
+                            <option value="1-3">De 1 a 3 años</option>
+                            <option value="4-6">De 4 a 6 años</option>
+                            <option value="6-10">De 6 a 10 años</option>
+                            <option value="mas-10">Más de 10 años</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Ubicación del negocio</label>
+                        <select class="input" id="ubicacionNegocio">
+                            <option value="">Selecciona una opción</option>
+                            <option value="puesto-improvisado-tianguis">Puesto improvisado en tianguis</option>
+                            <option value="oficina">Oficina, despacho o consultorio</option>
+                            <option value="vehiculo">Vehículo con o sin motor</option>
+                            <option value="fabrica">Fábrica, tortillería o panadería</option>
+                            <option value="catalogo">Venta por catálogo</option>
+                            <option value="domicilio-especial">Domicilio con instalación especial</option>
+                            <option value="kiosco">Pasillos en centro comercial (kiosco)</option>
+                            <option value="puesto-fijo-via">Puesto fijo en la vía pública</option>
+                            <option value="otro-sin-local">Otro sin local</option>
+                            <option value="otro-local">Otro local</option>
+                            <option value="ambulante">Ambulante de casa en casa o calle</option>
+                            <option value="puesto-fijo-tianguis">Puesto fijo en tianguis</option>
+                            <option value="mercado">Puesto en mercado bajo techo común</option>
+                            <option value="taller">Taller de servicios o reparación</option>
+                            <option value="locales-comun">Locales bajo techo común</option>
+                            <option value="tienda">Tienda, accesoria o tendejón</option>
+                            <option value="puesto-improvisado-via">Puesto improvisado en vía pública</option>
+                            <option value="domicilio-cliente">Domicilio del cliente</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Ingresos semanales</label>
+                        <input type="number" class="input" id="ingresosSemanal" placeholder="$0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Capacidad de pago semanal</label>
+                        <input type="number" class="input" id="capacidadPago" placeholder="$0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Experiencia con créditos grupales</label>
+                        <select class="input" id="experienciaCreditos">
+                            <option value="">Selecciona una opción</option>
+                            <option value="ninguna">Ninguna experiencia</option>
+                            <option value="1">1 crédito anterior</option>
+                            <option value="2-3">2 a 3 créditos anteriores</option>
+                            <option value="mas-3">Más de 3 créditos anteriores</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="goToScreen(5)">Continuar</button>
+                <button type="button" class="secondary-button">Cancelar Solicitud</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: CONFIRMACIÓN -->
+        <div class="screen" id="screen5">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(4)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title">Confirmación de datos</h1>
+                </div>
+
+                <p class="description">Verifica que todos los datos sean correctos</p>
+
+                <div id="confirmationData">
+                    <!-- Datos Personales -->
+                    <div class="confirmation-card">
+                        <span class="edit-icon" onclick="goToScreen(2)">✏️</span>
+                        <h3 class="subtitle" style="font-size: 16px; margin-bottom: 16px;">Datos personales</h3>
+                        
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Nombre(s)</div>
+                            <div class="confirmation-value" id="conf-nombre"></div>
+                        </div>
+                        
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Apellidos</div>
+                            <div class="confirmation-value" id="conf-apellidos"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">CURP</div>
+                            <div class="confirmation-value" id="conf-curp"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Fecha de nacimiento</div>
+                            <div class="confirmation-value" id="conf-fecha"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Entidad de nacimiento</div>
+                            <div class="confirmation-value" id="conf-entidad"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Teléfono</div>
+                            <div class="confirmation-value" id="conf-telefono"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">¿Es emprendedora referida?</div>
+                            <div class="confirmation-value" id="conf-referida"></div>
+                        </div>
+                    </div>
+
+                    <!-- Datos de Dirección -->
+                    <div class="confirmation-card">
+                        <span class="edit-icon" onclick="goToScreen(3)">✏️</span>
+                        <h3 class="subtitle" style="font-size: 16px; margin-bottom: 16px;">Dirección</h3>
+                        
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Calle</div>
+                            <div class="confirmation-value" id="conf-calle"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">No. Exterior - No. Interior</div>
+                            <div class="confirmation-value" id="conf-numeros"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Código Postal</div>
+                            <div class="confirmation-value" id="conf-cp"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Colonia/Domicilio</div>
+                            <div class="confirmation-value" id="conf-colonia"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Alcaldía/Municipio</div>
+                            <div class="confirmation-value" id="conf-municipio"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Estado</div>
+                            <div class="confirmation-value" id="conf-estado"></div>
+                        </div>
+                    </div>
+
+                    <!-- Variables Relevantes -->
+                    <div class="confirmation-card">
+                        <span class="edit-icon" onclick="goToScreen(4)">✏️</span>
+                        <h3 class="subtitle" style="font-size: 16px; margin-bottom: 16px;">Variables relevantes</h3>
+                        
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Antigüedad del domicilio</div>
+                            <div class="confirmation-value" id="conf-antiguedadDom"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Tipo de domicilio</div>
+                            <div class="confirmation-value" id="conf-tipoDom"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Coincidencia INE–domicilio</div>
+                            <div class="confirmation-value" id="conf-ine"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Antigüedad del negocio</div>
+                            <div class="confirmation-value" id="conf-antiguedadNeg"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Ubicación del negocio</div>
+                            <div class="confirmation-value" id="conf-ubicacionNeg"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Ingresos semanales</div>
+                            <div class="confirmation-value" id="conf-ingresos"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Capacidad de pago semanal</div>
+                            <div class="confirmation-value" id="conf-capacidad"></div>
+                        </div>
+
+                        <div class="confirmation-item">
+                            <div class="confirmation-label">Experiencia con créditos grupales</div>
+                            <div class="confirmation-value" id="conf-experiencia"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="calculateAndShowGrade()">Guardar</button>
+                <button type="button" class="secondary-button">Cancelar Solicitud</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 6: CALIFICACIÓN INICIAL -->
+        <div class="screen" id="screen6">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(5)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title">Calificación inicial</h1>
+                </div>
+
+                <div class="info-note">
+                    <div class="info-note-text">
+                        Esta calificación se calcula con la información capturada en la solicitud, <strong>antes de consultar el buró (CDC)</strong>.
+                    </div>
+                </div>
+
+                <div class="grade-container">
+                    <div class="grade-circle" id="gradeCircle">A</div>
+                </div>
+                <div class="grade-subtitle" id="gradeSubtitle">Excelente perfil crediticio</div>
+
+                <div class="variables-section">
+                    <h2 class="variables-title">Variables relevantes</h2>
+
+                    <div class="variable-item">
+                        <div class="variable-label">1. Ingresos y gastos</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="var1">
+                                <span class="progress-percentage" id="var1-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="variable-item">
+                        <div class="variable-label">2. Negocio/Actividad económica</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="var2">
+                                <span class="progress-percentage" id="var2-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="variable-item">
+                        <div class="variable-label">3. Ubicación/Zona/Domicilio</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="var3">
+                                <span class="progress-percentage" id="var3-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="variable-item">
+                        <div class="variable-label">4. Inclusión financiera</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="var4">
+                                <span class="progress-percentage" id="var4-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="showSMSModal()">Consultar CDC</button>
+                <button type="button" class="secondary-button" onclick="goToScreen(9)">Ver detalle</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 7: AUTORIZACIÓN -->
+        <div class="screen" id="screen7">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(6)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title">Autorización</h1>
+                </div>
+
+                <div class="auth-header">
+                    <p class="auth-subtitle">Ingresa el NIP que recibió</p>
+                    <p class="auth-name" id="authName">DANIELA SOFIA LOPEZ REYES 08/2025</p>
+                </div>
+
+                <p class="auth-description">
+                    Al continuar, asegúrate que la integrante reciba un código que servirá como firma (NIP) para la autorización de consulta de la información. Acuerdo entre <strong>Podemos Progresar, S.A. de C.V., SOFOM E.N.R.</strong> (en adelante la Empresa) Y Nombre de la integrante (en adelante la Cliente). Las partes de la presente, de común acuerdo y al expresar su consentimiento respecto al servicio ofrecido por la Empresa mediante medios electrónicos para consultar y obtener el Número de Identificación Personal (NIP).
+                </p>
+
+                <div class="nip-container">
+                    <p class="nip-label">Ingresa el código NIP que enviamos al teléfono terminado en 5555</p>
+                    
+                    <div class="nip-boxes">
+                        <div class="nip-box filled">5</div>
+                        <div class="nip-box filled">4</div>
+                        <div class="nip-box filled">5</div>
+                        <div class="nip-box filled">0</div>
+                        <div class="nip-box filled">5</div>
+                        <input type="number" class="nip-input" id="nip1" maxlength="1" min="0" max="9" oninput="handleNipInput(this, 'nip2')">
+                        <input type="number" class="nip-input" id="nip2" maxlength="1" min="0" max="9" oninput="handleNipInput(this, null)">
+                    </div>
+                </div>
+
+                <div class="auth-link">
+                    <a href="#">Reenviar de nuevo el NIP 🔄</a>
+                </div>
+
+                <div class="auth-footer">
+                    *AL PRESIONAR EL BOTON "SI, AUTORIZO" LE INFORMAMOS QUE LA INTEGRANTE AUTORIZA LA CONSULTA.
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" id="authButton" onclick="authorizeAndShowFinalGrade()" disabled>Sí, autorizo</button>
+                <button type="button" class="secondary-button">Cancelar Solicitud</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 8: RESULTADO POST-BURÓ -->
+        <div class="screen" id="screen8">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(7)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="header">
+                    <h1 class="title" id="screen8-title">Resultado de evaluación</h1>
+                </div>
+
+                <div style="text-align: center; margin: 20px 0;">
+                    <div class="status-badge" id="statusBadge">Pre-aprobada</div>
+                </div>
+
+                <div class="grade-container">
+                    <div class="grade-circle" id="gradeCircleFinal">A</div>
+                </div>
+                <div class="grade-subtitle" id="gradeSubtitleFinal">Excelente perfil crediticio</div>
+
+                <div class="variables-section" id="variablesSection">
+                    <h2 class="variables-title">Variables relevantes</h2>
+
+                    <div class="variable-item">
+                        <div class="variable-label">1. Ingresos y gastos</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="varFinal1">
+                                <span class="progress-percentage" id="varFinal1-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="variable-item">
+                        <div class="variable-label">2. Negocio/Actividad económica</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="varFinal2">
+                                <span class="progress-percentage" id="varFinal2-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="variable-item">
+                        <div class="variable-label">3. Ubicación/Zona/Domicilio</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="varFinal3">
+                                <span class="progress-percentage" id="varFinal3-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="variable-item">
+                        <div class="variable-label">4. Inclusión financiera</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="varFinal4">
+                                <span class="progress-percentage" id="varFinal4-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="goToScreen(10)">Ver detalle</button>
+                <button type="button" class="secondary-button" onclick="alert('Proceso finalizado')">Finalizar</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 9: DETALLE PRE-BURÓ -->
+        <div class="screen" id="screen9">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(6)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="detail-banner warning">
+                    <div class="detail-banner-icon">📊</div>
+                    <div class="detail-banner-title">CALIFICACIÓN SIN BURÓ</div>
+                    <div class="detail-banner-subtitle">Evaluación basada únicamente en la información capturada</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Calificación obtenida</div>
+                    <div class="detail-card">
+                        <div class="detail-card-title" id="detail-initial-grade-title">Calificación A</div>
+                        <div class="detail-card-content">
+                            Promedio de variables: <span id="detail-initial-average">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Desglose por variable</div>
+                    <div id="detail-initial-variables">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="info-note">
+                    <div class="info-note-text">
+                        Esta calificación es preliminar y <strong>no constituye una decisión de crédito</strong>. La evaluación final se realizará después de consultar el buró de crédito (CDC).
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="goToScreen(6)">Regresar</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 10: DETALLE POST-BURÓ -->
+        <div class="screen" id="screen10">
+            <div class="status-bar">
+                <button class="back-button" onclick="goToScreen(8)">←</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>CONECTADO</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="detail-banner" id="detailBannerFinal">
+                    <div class="detail-banner-icon" id="detailBannerIcon">✅</div>
+                    <div class="detail-banner-title" id="detailBannerTitle">SOLICITUD PRE-APROBADA</div>
+                    <div class="detail-banner-subtitle" id="detailBannerSubtitle">La solicitud cumple con los criterios de evaluación</div>
+                </div>
+
+                <!-- ESTATUS -->
+                <div class="detail-section">
+                    <div class="detail-section-title">Estatus de la solicitud</div>
+                    <div class="detail-card">
+                        <div class="detail-card-title" id="detail-status-text">Pre-aprobada</div>
+                        <div class="detail-card-content" id="detail-status-description">
+                            La solicitud cumple con los criterios de evaluación inicial y de buró de crédito.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESUMEN BURÓ -->
+                <div class="detail-section">
+                    <div class="detail-section-title">Resumen de consulta CDC (Buró)</div>
+                    <div id="bureau-summary">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- EVALUACIÓN REGLAS DURAS -->
+                <div class="detail-section">
+                    <div class="detail-section-title">Evaluación de reglas de rechazo</div>
+                    <div id="hard-rules-evaluation">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- IMPACTO EN CALIFICACIÓN (SOLO SI PRE-APROBADA) -->
+                <div class="detail-section" id="grade-impact-section">
+                    <div class="detail-section-title">Impacto en la calificación</div>
+                    <div class="grade-comparison">
+                        <div class="grade-comparison-item">
+                            <div class="grade-comparison-label">Inicial (sin buró)</div>
+                            <div class="grade-comparison-value" id="comparison-initial-grade">A</div>
+                        </div>
+                        <div class="grade-comparison-arrow">→</div>
+                        <div class="grade-comparison-item">
+                            <div class="grade-comparison-label">Ajustada (con buró)</div>
+                            <div class="grade-comparison-value" id="comparison-final-grade">B</div>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-card-content" id="grade-change-explanation">
+                            La calificación se mantuvo después de la consulta al buró.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTA IMPORTANTE -->
+                <div class="info-note">
+                    <div class="info-note-text" id="final-disclaimer">
+                        <strong>Nota importante:</strong> La calificación crediticia es una herramienta de evaluación y <strong>no constituye por sí misma una autorización o rechazo de crédito</strong>. Solo acompaña y explica la decisión de pre-aprobación.
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="cta-button" onclick="goToScreen(8)">Regresar</button>
+                <button type="button" class="secondary-button" onclick="alert('Proceso finalizado')">Finalizar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SMS -->
+    <div class="modal-overlay" id="smsModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSMSModal()">×</button>
+            
+            <div class="modal-icon">
+                📱
+            </div>
+            
+            <h2 class="modal-title">Envío de SMS</h2>
+            
+            <p class="modal-text">
+                Al continuar, asegúrate que las integrantes reciban un código que servirá como firma (NIP) para la <strong>autorización de consulta de la información</strong>. Acuerdo entre <strong>Podemos Progresar, S.A. de C.V., SOFOM E.N.R.</strong> (en adelante la Empresa) Y Nombre de la integrante (en adelante la Cliente). Las partes de la presente, de común acuerdo y a expresar su consentimiento respecto al servicio ofrecido por la Empresa mediante medios electrónicos para consultar y obtener el Número de Identificación Personal (NIP).
+            </p>
+            
+            <div class="modal-buttons">
+                <button class="modal-button-primary" onclick="confirmSMS()">Sí, continuar</button>
+                <button class="modal-button-secondary" onclick="closeSMSModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+        let isReferida = true;
+        let calculatedScores = { ingresos: 0, negocio: 0, ubicacion: 0, financiera: 0 };
+        let initialGrade = '';
+        let initialGradeClass = '';
+        let initialAverage = 0;
+        let finalGrade = '';
+        let finalGradeClass = '';
+        let finalStatus = ''; // 'PRE-APROBADA' o 'RECHAZADA'
+        let finalAdjustedScores = {};
+        let rejectionReason = '';
+        let bureauData = null;
+
+        // ============================================
+        // TOGGLE Y VALIDACIONES
+        // ============================================
+        document.getElementById('toggleReferida').addEventListener('click', function() {
+            this.classList.toggle('active');
+            isReferida = this.classList.contains('active');
+        });
+
+        function validateCURP(input) {
+            const curp = input.value.toUpperCase();
+            input.value = curp;
+            
+            const curpError = document.getElementById('curpError');
+            
+            if (curp.length > 0 && curp.length !== 18) {
+                input.classList.add('error');
+                curpError.classList.add('show');
+            } else {
+                input.classList.remove('error');
+                curpError.classList.remove('show');
+            }
+        }
+
+        // ============================================
+        // NAVEGACIÓN
+        // ============================================
+        function goToScreen(screenNumber) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+
+            if (screenNumber === 5) {
+                updateConfirmationScreen();
+            }
+
+            if (screenNumber === 7) {
+                updateAuthScreen();
+            }
+
+            if (screenNumber === 9) {
+                generateInitialDetail();
+            }
+
+            if (screenNumber === 10) {
+                generateFinalDetail();
+            }
+
+            document.getElementById('screen' + screenNumber).classList.add('active');
+        }
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function getSelectText(id) {
+            const select = document.getElementById(id);
+            return select.options[select.selectedIndex].text;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function getGradeClassFromScore(score) {
+            if (score >= 75) return 'grade-a';
+            if (score >= 60) return 'grade-b';
+            if (score >= 45) return 'grade-c';
+            return 'grade-d';
+        }
+
+        // ============================================
+        // SCORING
+        // ============================================
+        function getScoreForAntiguedad(value) {
+            switch(value) {
+                case 'mas-10': return 40;
+                case '6-10': return 35;
+                case '4-6': return 30;
+                case '1-3': return 20;
+                case 'menos-1': return 10;
+                default: return 0;
+            }
+        }
+
+        function getScoreForTipoDomicilio(value) {
+            switch(value) {
+                case 'propia': return 30;
+                case 'hipoteca': return 28;
+                case 'familiar': return 25;
+                case 'rentada': return 15;
+                default: return 0;
+            }
+        }
+
+        function getScoreForUbicacionNegocio(value) {
+            const scores = {
+                'oficina': 30, 'fabrica': 30, 'tienda': 28, 'taller': 28,
+                'locales-comun': 25, 'domicilio-especial': 25, 'mercado': 22,
+                'puesto-fijo-tianguis': 20, 'kiosco': 20, 'puesto-fijo-via': 18,
+                'otro-local': 18, 'catalogo': 15, 'vehiculo': 15,
+                'puesto-improvisado-tianguis': 12, 'puesto-improvisado-via': 12,
+                'domicilio-cliente': 10, 'ambulante': 10, 'otro-sin-local': 8
+            };
+            return scores[value] || 15;
+        }
+
+        // ============================================
+        // PANTALLA DE CONFIRMACIÓN
+        // ============================================
+        function updateConfirmationScreen() {
+            document.getElementById('conf-nombre').textContent = document.getElementById('nombre').value;
+            document.getElementById('conf-apellidos').textContent = 
+                document.getElementById('apellidoP').value + ' ' + document.getElementById('apellidoM').value;
+            document.getElementById('conf-curp').textContent = document.getElementById('curp').value;
+            document.getElementById('conf-fecha').textContent = formatDate(document.getElementById('fechaNacimiento').value);
+            document.getElementById('conf-entidad').textContent = document.getElementById('entidadNacimiento').value;
+            document.getElementById('conf-telefono').textContent = document.getElementById('telefono').value;
+            document.getElementById('conf-referida').textContent = isReferida ? 'Sí' : 'No';
+            
+            document.getElementById('conf-calle').textContent = document.getElementById('calle').value;
+            document.getElementById('conf-numeros').textContent = 
+                document.getElementById('noExterior').value + ' - ' + document.getElementById('noInterior').value;
+            document.getElementById('conf-cp').textContent = document.getElementById('codigoPostal').value;
+            document.getElementById('conf-colonia').textContent = document.getElementById('colonia').value;
+            document.getElementById('conf-municipio').textContent = document.getElementById('municipio').value;
+            document.getElementById('conf-estado').textContent = document.getElementById('estado').value;
+
+            document.getElementById('conf-antiguedadDom').textContent = getSelectText('antiguedadDomicilio');
+            document.getElementById('conf-tipoDom').textContent = getSelectText('tipoDomicilio');
+            document.getElementById('conf-ine').textContent = getSelectText('coincidenciaINE');
+            document.getElementById('conf-antiguedadNeg').textContent = getSelectText('antiguedadNegocio');
+            document.getElementById('conf-ubicacionNeg').textContent = getSelectText('ubicacionNegocio');
+            document.getElementById('conf-ingresos').textContent = '$' + (document.getElementById('ingresosSemanal').value || '0');
+            document.getElementById('conf-capacidad').textContent = '$' + (document.getElementById('capacidadPago').value || '0');
+            document.getElementById('conf-experiencia').textContent = getSelectText('experienciaCreditos');
+        }
+
+        function updateAuthScreen() {
+            const nombre = document.getElementById('nombre').value.toUpperCase();
+            const apellidos = (document.getElementById('apellidoP').value + ' ' + document.getElementById('apellidoM').value).toUpperCase();
+            document.getElementById('authName').textContent = `${nombre} ${apellidos} 08/2025`;
+        }
+
+        // ============================================
+        // CÁLCULO DE CALIFICACIÓN INICIAL
+        // ============================================
+        function calculateAndShowGrade() {
+            const edad = calculateAge(document.getElementById('fechaNacimiento').value);
+            const codigoPostal = document.getElementById('codigoPostal').value;
+            const telefono = document.getElementById('telefono').value;
+            const confirmacion = document.getElementById('confirmacion').value;
+            const telefonoConfirmado = telefono === confirmacion && telefono.length === 10;
+            
+            const antiguedadDom = document.getElementById('antiguedadDomicilio').value;
+            const tipoDom = document.getElementById('tipoDomicilio').value;
+            const coincidenciaINE = document.getElementById('coincidenciaINE').value;
+            const antiguedadNeg = document.getElementById('antiguedadNegocio').value;
+            const ubicacionNeg = document.getElementById('ubicacionNegocio').value;
+            const ingresos = parseFloat(document.getElementById('ingresosSemanal').value) || 0;
+            const capacidadPago = parseFloat(document.getElementById('capacidadPago').value) || 0;
+            const experienciaCreditos = document.getElementById('experienciaCreditos').value;
+
+            let scores = { ingresos: 0, negocio: 0, ubicacion: 0, financiera: 0 };
+
+            // Variable 1: Ingresos y gastos
+            let scoreIngresos = 0;
+            if (edad >= 25 && edad <= 45) scoreIngresos += 30;
+            else if (edad >= 18 && edad < 25) scoreIngresos += 20;
+            else if (edad > 45 && edad <= 60) scoreIngresos += 25;
+            else scoreIngresos += 15;
+
+            if (ingresos >= 3000) scoreIngresos += 40;
+            else if (ingresos >= 2000) scoreIngresos += 30;
+            else if (ingresos >= 1000) scoreIngresos += 20;
+            else if (ingresos > 0) scoreIngresos += 10;
+
+            if (capacidadPago >= 500) scoreIngresos += 30;
+            else if (capacidadPago >= 300) scoreIngresos += 20;
+            else if (capacidadPago >= 150) scoreIngresos += 15;
+            else if (capacidadPago > 0) scoreIngresos += 5;
+
+            scores.ingresos = scoreIngresos;
+
+            // Variable 2: Negocio
+            let scoreNegocio = 0;
+            scoreNegocio += getScoreForAntiguedad(antiguedadNeg);
+            scoreNegocio += getScoreForUbicacionNegocio(ubicacionNeg);
+            scoreNegocio += isReferida ? 30 : 15;
+            scores.negocio = scoreNegocio;
+
+            // Variable 3: Ubicación
+            let scoreUbicacion = 0;
+            const zonasAltas = ['01000', '11000', '03100', '06700'];
+            const zonasMedioAltas = ['55000', '55100', '55200'];
+            
+            if (zonasAltas.some(cp => codigoPostal.startsWith(cp.substring(0, 2)))) scoreUbicacion += 40;
+            else if (zonasMedioAltas.some(cp => codigoPostal.startsWith(cp.substring(0, 2)))) scoreUbicacion += 30;
+            else scoreUbicacion += 20;
+
+            scoreUbicacion += getScoreForTipoDomicilio(tipoDom);
+            scoreUbicacion += getScoreForAntiguedad(antiguedadDom);
+            scores.ubicacion = scoreUbicacion;
+
+            // Variable 4: Financiera
+            let scoreFinanciera = 0;
+            scoreFinanciera += telefonoConfirmado ? 30 : 10;
+            scoreFinanciera += (coincidenciaINE === 'si') ? 30 : 10;
+
+            switch(experienciaCreditos) {
+                case 'mas-3': scoreFinanciera += 40; break;
+                case '2-3': scoreFinanciera += 35; break;
+                case '1': scoreFinanciera += 25; break;
+                case 'ninguna': scoreFinanciera += 15; break;
+            }
+            scores.financiera = scoreFinanciera;
+
+            calculatedScores = scores;
+
+            const promedio = (scores.ingresos + scores.negocio + scores.ubicacion + scores.financiera) / 4;
+            initialAverage = promedio;
+
+            let grade, gradeClass, subtitle;
+            if (promedio >= 75) {
+                grade = 'A'; gradeClass = 'grade-a'; subtitle = 'Excelente perfil crediticio';
+            } else if (promedio >= 60) {
+                grade = 'B'; gradeClass = 'grade-b'; subtitle = 'Buen perfil crediticio';
+            } else if (promedio >= 45) {
+                grade = 'C'; gradeClass = 'grade-c'; subtitle = 'Perfil crediticio aceptable';
+            } else {
+                grade = 'D'; gradeClass = 'grade-d'; subtitle = 'Perfil crediticio requiere mejora';
+            }
+
+            initialGrade = grade;
+            initialGradeClass = gradeClass;
+
+            const gradeCircle = document.getElementById('gradeCircle');
+            gradeCircle.textContent = grade;
+            gradeCircle.className = 'grade-circle ' + gradeClass;
+            document.getElementById('gradeSubtitle').textContent = subtitle;
+
+            updateProgressBar('var1', Math.round(scores.ingresos), gradeClass);
+            updateProgressBar('var2', Math.round(scores.negocio), gradeClass);
+            updateProgressBar('var3', Math.round(scores.ubicacion), gradeClass);
+            updateProgressBar('var4', Math.round(scores.financiera), gradeClass);
+
+            goToScreen(6);
+        }
+
+        function updateProgressBar(varId, percentage, gradeClass) {
+            setTimeout(() => {
+                const bar = document.getElementById(varId);
+                bar.style.width = percentage + '%';
+                bar.className = 'progress-bar ' + gradeClass;
+                document.getElementById(varId + '-pct').textContent = percentage + '%';
+            }, 300);
+        }
+
+        // ============================================
+        // DETALLE INICIAL (PRE-BURÓ)
+        // ============================================
+        function generateInitialDetail() {
+            const container = document.getElementById('detail-initial-variables');
+            container.innerHTML = '';
+
+            const variables = [
+                { name: 'Ingresos y gastos', score: calculatedScores.ingresos, components: getIngresosComponents() },
+                { name: 'Negocio/Actividad económica', score: calculatedScores.negocio, components: getNegocioComponents() },
+                { name: 'Ubicación/Zona/Domicilio', score: calculatedScores.ubicacion, components: getUbicacionComponents() },
+                { name: 'Inclusión financiera', score: calculatedScores.financiera, components: getFinancieraComponents() }
+            ];
+
+            variables.forEach((variable, index) => {
+                const gradeClass = getGradeClassFromScore(variable.score);
+                const card = document.createElement('div');
+                card.className = 'variable-detail-card';
+                card.innerHTML = `
+                    <div class="variable-detail-header">
+                        <div class="variable-detail-name">${index + 1}. ${variable.name}</div>
+                        <div class="variable-detail-score ${gradeClass}">${Math.round(variable.score)}%</div>
+                    </div>
+                    <div class="variable-detail-components">
+                        ${variable.components.map(comp => `
+                            <div class="component-item">
+                                <span>${comp.name}</span>
+                                <span class="component-value">${comp.value}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('detail-initial-grade-title').textContent = `Calificación ${initialGrade}`;
+            document.getElementById('detail-initial-average').textContent = `${Math.round(initialAverage)}%`;
+        }
+
+        function getIngresosComponents() {
+            const edad = calculateAge(document.getElementById('fechaNacimiento').value);
+            const ingresos = parseFloat(document.getElementById('ingresosSemanal').value) || 0;
+            const capacidad = parseFloat(document.getElementById('capacidadPago').value) || 0;
+
+            return [
+                { name: 'Edad', value: `${edad} años` },
+                { name: 'Ingresos semanales', value: `$${ingresos}` },
+                { name: 'Capacidad de pago', value: `$${capacidad}` }
+            ];
+        }
+
+        function getNegocioComponents() {
+            return [
+                { name: 'Antigüedad del negocio', value: getSelectText('antiguedadNegocio') },
+                { name: 'Ubicación del negocio', value: getSelectText('ubicacionNegocio') },
+                { name: 'Es referida', value: isReferida ? 'Sí' : 'No' }
+            ];
+        }
+
+        function getUbicacionComponents() {
+            return [
+                { name: 'Código postal', value: document.getElementById('codigoPostal').value },
+                { name: 'Tipo de domicilio', value: getSelectText('tipoDomicilio') },
+                { name: 'Antigüedad', value: getSelectText('antiguedadDomicilio') }
+            ];
+        }
+
+        function getFinancieraComponents() {
+            const telefono = document.getElementById('telefono').value;
+            const confirmacion = document.getElementById('confirmacion').value;
+            return [
+                { name: 'Teléfono confirmado', value: telefono === confirmacion ? 'Sí' : 'No' },
+                { name: 'INE coincide', value: getSelectText('coincidenciaINE') },
+                { name: 'Experiencia crediticia', value: getSelectText('experienciaCreditos') }
+            ];
+        }
+
+        // ============================================
+        // MODAL SMS
+        // ============================================
+        function showSMSModal() {
+            document.getElementById('smsModal').classList.add('active');
+        }
+
+        function closeSMSModal() {
+            document.getElementById('smsModal').classList.remove('active');
+        }
+
+        function confirmSMS() {
+            closeSMSModal();
+            goToScreen(7);
+        }
+
+        // ============================================
+        // INPUT NIP
+        // ============================================
+        function handleNipInput(input, nextInputId) {
+            if (input.value.length > 1) {
+                input.value = input.value.slice(0, 1);
+            }
+
+            const nip1 = document.getElementById('nip1').value;
+            const nip2 = document.getElementById('nip2').value;
+            
+            if (nip1 && nip2) {
+                document.getElementById('authButton').disabled = false;
+            } else {
+                document.getElementById('authButton').disabled = true;
+            }
+
+            if (nextInputId && input.value.length === 1) {
+                document.getElementById(nextInputId).focus();
+            }
+        }
+
+        // ============================================
+        // SIMULACIÓN DE BURÓ
+        // ============================================
+        function simulateBureauData() {
+            const random = Math.random();
+            
+            // 30% de probabilidad de rechazo
+            if (random < 0.3) {
+                return {
+                    hasReject: true,
+                    rejectReason: 'Quebranto/Cobranza',
+                    details: {
+                        cuentasUP: 2,
+                        cuentasPC: 1,
+                        cuentasLO: 0,
+                        saldoVencido: 2500,
+                        periodo: 'Últimos 12 meses',
+                        estatusFD: 0,
+                        estatusSG: 0,
+                        estatusIM: 0
+                    }
+                };
+            }
+            
+            return {
+                hasReject: false,
+                details: {
+                    cuentasUP: 0,
+                    cuentasPC: 0,
+                    cuentasLO: 0,
+                    saldoVencido: 0,
+                    periodo: 'Últimos 12 meses',
+                    estatusFD: 0,
+                    estatusSG: 0,
+                    estatusIM: 0
+                }
+            };
+        }
+
+        // ============================================
+        // AUTORIZACIÓN Y EVALUACIÓN POST-BURÓ
+        // ============================================
+        function authorizeAndShowFinalGrade() {
+            bureauData = simulateBureauData();
+
+            if (bureauData.hasReject) {
+                finalStatus = 'RECHAZADA';
+                finalGrade = '';
+                rejectionReason = bureauData.rejectReason;
+                showRejectedScreen();
+            } else {
+                finalStatus = 'PRE-APROBADA';
+                applyGradeAdjustment();
+                showPreApprovedScreen();
+            }
+        }
+
+        function showRejectedScreen() {
+            document.getElementById('screen8-title').textContent = 'Resultado de evaluación';
+            
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = 'Rechazada';
+            statusBadge.className = 'status-badge rejected';
+
+            const gradeCircle = document.getElementById('gradeCircleFinal');
+            gradeCircle.textContent = 'Rechazada';
+            gradeCircle.className = 'grade-circle rejected';
+            
+            document.getElementById('gradeSubtitleFinal').textContent = 'Solicitud rechazada por reglas de buró';
+            document.getElementById('variablesSection').style.display = 'none';
+            
+            goToScreen(8);
+        }
+
+        function showPreApprovedScreen() {
+            document.getElementById('screen8-title').textContent = 'Calificación ajustada';
+
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = 'Pre-aprobada';
+            statusBadge.className = 'status-badge pre-approved';
+
+            const gradeCircleFinal = document.getElementById('gradeCircleFinal');
+            gradeCircleFinal.textContent = finalGrade;
+            gradeCircleFinal.className = 'grade-circle ' + finalGradeClass;
+
+            // Subtítulo según calificación final
+            let subtitle = '';
+            if (finalGrade === 'A+') subtitle = 'Excelente perfil: muy alta probabilidad de pago';
+            else if (finalGrade === 'A-') subtitle = 'Buen perfil: probabilidad de pago alta';
+            else if (finalGrade === 'B') subtitle = 'Perfil aceptable: requiere seguimiento';
+            else if (finalGrade === 'C') subtitle = 'Perfil con riesgo: refuerza validaciones';
+
+            document.getElementById('gradeSubtitleFinal').textContent = subtitle;
+            document.getElementById('variablesSection').style.display = 'block';
+
+            updateProgressBar('varFinal1', Math.round(finalAdjustedScores.ingresos), finalGradeClass);
+            updateProgressBar('varFinal2', Math.round(finalAdjustedScores.negocio), finalGradeClass);
+            updateProgressBar('varFinal3', Math.round(finalAdjustedScores.ubicacion), finalGradeClass);
+            updateProgressBar('varFinal4', Math.round(finalAdjustedScores.financiera), finalGradeClass);
+
+            goToScreen(8);
+        }
+
+        function applyGradeAdjustment() {
+        let adjustedScores = { ...calculatedScores };
+
+        if (initialGrade === 'C') {
+            adjustedScores.ingresos = Math.min(100, calculatedScores.ingresos + 15);
+            adjustedScores.negocio = Math.min(100, calculatedScores.negocio + 12);
+            adjustedScores.ubicacion = Math.min(100, calculatedScores.ubicacion + 10);
+            adjustedScores.financiera = Math.min(100, calculatedScores.financiera + 18);
+            finalGrade = 'B';
+            finalGradeClass = 'grade-b';
+        } else if (initialGrade === 'B') {
+            adjustedScores.ingresos = Math.max(0, calculatedScores.ingresos - 20);
+            adjustedScores.negocio = Math.max(0, calculatedScores.negocio - 18);
+            adjustedScores.ubicacion = Math.max(0, calculatedScores.ubicacion - 15);
+            adjustedScores.financiera = Math.max(0, calculatedScores.financiera - 22);
+            finalGrade = 'D';
+            finalGradeClass = 'grade-d';
+        } else if (initialGrade === 'A') {
+            const random = Math.random();
+            if (random > 0.5) {
+                adjustedScores.ingresos = Math.max(75, calculatedScores.ingresos - 3);
+                adjustedScores.negocio = Math.max(75, calculatedScores.negocio - 2);
+                adjustedScores.ubicacion = Math.max(75, calculatedScores.ubicacion - 4);
+                adjustedScores.financiera = Math.max(75, calculatedScores.financiera - 5);
+                finalGrade = 'A';
+                finalGradeClass = 'grade-a';
+            } else {
+                adjustedScores.ingresos = Math.max(60, calculatedScores.ingresos - 12);
+                adjustedScores.negocio = Math.max(60, calculatedScores.negocio - 10);
+                adjustedScores.ubicacion = Math.max(60, calculatedScores.ubicacion - 8);
+                adjustedScores.financiera = Math.max(60, calculatedScores.financiera - 15);
+                finalGrade = 'B';
+                finalGradeClass = 'grade-b';
+            }
+        } else {
+            adjustedScores.ingresos = Math.max(0, calculatedScores.ingresos - 3);
+            adjustedScores.negocio = Math.max(0, calculatedScores.negocio - 2);
+            adjustedScores.ubicacion = Math.max(0, calculatedScores.ubicacion - 2);
+            adjustedScores.financiera = Math.max(0, calculatedScores.financiera - 4);
+            finalGrade = 'D';
+            finalGradeClass = 'grade-d';
+        }
+
+        finalAdjustedScores = adjustedScores;
+    }
+
+    // ============================================
+    // DETALLE FINAL (POST-BURÓ)
+    // ============================================
+    function generateFinalDetail() {
+        const banner = document.getElementById('detailBannerFinal');
+        const bannerIcon = document.getElementById('detailBannerIcon');
+        const bannerTitle = document.getElementById('detailBannerTitle');
+        const bannerSubtitle = document.getElementById('detailBannerSubtitle');
+
+        if (finalStatus === 'RECHAZADA') {
+            banner.className = 'detail-banner error';
+            bannerIcon.textContent = '❌';
+            bannerTitle.textContent = 'SOLICITUD RECHAZADA';
+            bannerSubtitle.textContent = 'La solicitud no cumple con los criterios de evaluación de buró';
+
+            document.getElementById('detail-status-text').textContent = 'Rechazada';
+            document.getElementById('detail-status-description').textContent = 
+                'La solicitud ha sido rechazada debido a incumplimiento de reglas de buró de crédito.';
+
+            document.getElementById('grade-impact-section').style.display = 'none';
+            document.getElementById('final-disclaimer').innerHTML = 
+                '<strong>Nota:</strong> Esta decisión de rechazo está basada en reglas duras de evaluación crediticia y no puede ser modificada.';
+        } else {
+            banner.className = 'detail-banner success';
+            bannerIcon.textContent = '✅';
+            bannerTitle.textContent = 'SOLICITUD PRE-APROBADA';
+            bannerSubtitle.textContent = 'La solicitud cumple con los criterios de evaluación';
+
+            document.getElementById('detail-status-text').textContent = 'Pre-aprobada';
+            document.getElementById('detail-status-description').textContent = 
+                'La solicitud cumple con los criterios de evaluación inicial y de buró de crédito.';
+
+            document.getElementById('grade-impact-section').style.display = 'block';
+            document.getElementById('comparison-initial-grade').textContent = initialGrade;
+            document.getElementById('comparison-initial-grade').className = 'grade-comparison-value ' + initialGradeClass;
+            document.getElementById('comparison-final-grade').textContent = finalGrade;
+            document.getElementById('comparison-final-grade').className = 'grade-comparison-value ' + finalGradeClass;
+
+            let changeText = '';
+            if (initialGrade === finalGrade) {
+                changeText = 'La calificación se mantuvo después de la consulta al buró.';
+            } else if (initialGrade === 'C' && finalGrade === 'B') {
+                changeText = 'La calificación mejoró de C a B después de la consulta al buró.';
+            } else if (initialGrade === 'B' && finalGrade === 'D') {
+                changeText = 'La calificación disminuyó de B a D después de la consulta al buró.';
+            } else if (initialGrade === 'A' && finalGrade === 'B') {
+                changeText = 'La calificación disminuyó levemente de A a B después de la consulta al buró.';
+            }
+            document.getElementById('grade-change-explanation').textContent = changeText;
+
+            document.getElementById('final-disclaimer').innerHTML = 
+                '<strong>Nota importante:</strong> La calificación crediticia es una herramienta de evaluación y <strong>no constituye por sí misma una autorización o rechazo de crédito</strong>. Solo acompaña y explica la decisión de pre-aprobación.';
+        }
+
+        generateBureauSummary();
+        generateHardRulesEvaluation();
+    }
+
+    function generateBureauSummary() {
+        const container = document.getElementById('bureau-summary');
+        container.innerHTML = '';
+
+        if (!bureauData) return;
+
+        const card = document.createElement('div');
+        card.className = 'bureau-data-card';
+        card.innerHTML = `
+            <div class="bureau-data-item">
+                <span class="bureau-data-label">Cuentas UP (Quebranto):</span>
+                <span class="bureau-data-value ${bureauData.details.cuentasUP > 0 ? 'danger' : 'success'}">
+                    ${bureauData.details.cuentasUP}
+                </span>
+            </div>
+            <div class="bureau-data-item">
+                <span class="bureau-data-label">Cuentas PC (Cobranza):</span>
+                <span class="bureau-data-value ${bureauData.details.cuentasPC > 0 ? 'danger' : 'success'}">
+                    ${bureauData.details.cuentasPC}
+                </span>
+            </div>
+            <div class="bureau-data-item">
+                <span class="bureau-data-label">Cuentas LO (Ilocalizable):</span>
+                <span class="bureau-data-value ${bureauData.details.cuentasLO > 0 ? 'danger' : 'success'}">
+                    ${bureauData.details.cuentasLO}
+                </span>
+            </div>
+            <div class="bureau-data-item">
+                <span class="bureau-data-label">Saldo vencido (últimos 12 meses):</span>
+                <span class="bureau-data-value ${bureauData.details.saldoVencido > 1500 ? 'danger' : 'success'}">
+                    $${bureauData.details.saldoVencido.toLocaleString()}
+                </span>
+            </div>
+            <div class="bureau-data-item">
+                <span class="bureau-data-label">Estatus FD/SG/IM:</span>
+                <span class="bureau-data-value ${(bureauData.details.estatusFD + bureauData.details.estatusSG + bureauData.details.estatusIM) > 0 ? 'danger' : 'success'}">
+                    ${bureauData.details.estatusFD + bureauData.details.estatusSG + bureauData.details.estatusIM}
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    }
+
+    function generateHardRulesEvaluation() {
+        const container = document.getElementById('hard-rules-evaluation');
+        container.innerHTML = '';
+
+        const rules = [
+            {
+                title: 'Fraude / Demanda / Mora (FD, SG, IM)',
+                passed: (bureauData.details.estatusFD + bureauData.details.estatusSG + bureauData.details.estatusIM) === 0,
+                description: 'No debe tener estatus FD, SG o IM en ninguna cuenta.'
+            },
+            {
+                title: 'Quebranto / Cobranza / Ilocalizable',
+                passed: (bureauData.details.cuentasUP + bureauData.details.cuentasPC + bureauData.details.cuentasLO) === 0 || bureauData.details.saldoVencido <= 1500,
+                description: 'Si tiene cuentas UP, PC o LO en los últimos 12 meses, el saldo vencido debe ser ≤ $1,500.'
+            },
+            {
+                title: 'Atrasos mayores al permitido',
+                passed: bureauData.details.saldoVencido <= 5000,
+                description: 'El saldo vencido no debe exceder el monto máximo permitido ($5,000 en este prototipo).'
+            }
+        ];
+
+        rules.forEach(rule => {
+            const ruleDiv = document.createElement('div');
+            ruleDiv.className = 'detail-rule';
+            ruleDiv.innerHTML = `
+                <div class="detail-rule-icon">${rule.passed ? '✅' : '❌'}</div>
+                <div class="detail-rule-content">
+                    <div class="detail-rule-title">${rule.title}</div>
+                    <div class="detail-rule-description">${rule.description}</div>
+                    <div class="detail-rule-description" style="margin-top: 4px; color: ${rule.passed ? '#4ade80' : '#ef4444'}; font-weight: 600;">
+                        ${rule.passed ? 'Cumple' : 'No cumple'}
+                    </div>
+                </div>
+            `;
+            container.appendChild(ruleDiv);
+        });
+    }
+
+</script>
